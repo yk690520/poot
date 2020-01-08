@@ -3,4 +3,4 @@ __pycache__
 uiTemp/*
 build/*
 dist/*
-poot.egg-ifo/*
+poot.egg-info/*
