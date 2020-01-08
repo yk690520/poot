@@ -7,9 +7,9 @@ setup(
     packages = find_packages(),
 
     #需要安装的依赖
-    install_requires=[
-        'pocoui>=1.0.79',
-        'airtest>=1.0.27'
+    requires=[
+        'airtest>=1.0.27',
+        'pocoui>=1.0.79'
     ],
 
     # 此项需要，否则卸载时报windows error
