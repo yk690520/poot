@@ -1,15 +1,17 @@
 import os
-import poot.adb as adb
+import subprocess
 import re,hashlib
-import poot.tools as tools
+from airtest.core.android.ime import YosemiteIme
+from .. import tools
 from io import StringIO
+from airtest.core.android.adb import ADB as AirtestADB
+from . import ADB_PATH,IME_PATH,DEVICE_NOT_FOUND,TEMP_UI_XML_SAVE_PATH,TEMP_XML
 class ADB():
     @staticmethod
     def getNowConnectDevice():
-        adb_path = "%s" % adb.ADB_PATH
-        str = os.popen('%s devices' % adb_path)
-        str = str.read()
-        f = StringIO(str)
+        adb_path = "%s" % ADB_PATH
+        resault = ADB.__execu_cmd('%s devices' % adb_path).strip()
+        f = StringIO(resault)
         deviceList = []
         while True:
             s = f.readline()
@@ -23,19 +25,18 @@ class ADB():
         return deviceList
     def __init__(self,device_id:str):
         self._device_id=device_id
-        self._adb_path="%s" % adb.ADB_PATH
+        self._adb_path=ADB_PATH
         self._cmd_prefix="%s -s %s " % (self._adb_path,device_id)
-        self.__install_ime()
-        self._ime=None
+        self._airtestADB=AirtestADB(device_id)
+        self._ime=YosemiteIme(self._airtestADB)
+        self._ime.start()
+        # self.__install_ime()
     def __install_ime(self):
         re = self.__make_shell_by_pope_return_re("ime list -a -s")
         if "com.android.adbkeyboard/.AdbIME" in re:
             return
         else:
-            self.install_app(adb.IME_PATH)
-    def __change_ime(self):
-        self._ime = self.__make_shell_by_pope_return_re("ime list -s").split("\n")[0]
-        self.__make_shell_by_pope_return_sucess("ime set com.android.adbkeyboard/.AdbIME",sucess="com.android.adbkeyboard/.AdbIME")
+            self.install_app(IME_PATH)
 
     def __restore_ime(self):
         self.__make_shell_by_pope_return_sucess("ime set %s" % self._ime,
@@ -54,31 +55,29 @@ class ADB():
 
 
 
-
-
     def input(self,text):
         '''
         直接输入文字
         :param text: 需要输入的文字
         :return: 无返回值
         '''
-        self.__change_ime()
         #需要输入的test
-        self.__make_shell_by_pope("am broadcast -a ADB_INPUT_TEXT --es msg '%s'",text)
-        self.__restore_ime()
+        self._ime.text(text)
 
-    def set_key(self,will_input_text,now_text):
+    def set_text(self,will_input_text,now_text:str):
         '''
         先清楚原有的text，再输入
         :param will_input_text:
         :param now_text:
         :return:
         '''
-        for n in now_text:
-            self.tap_backspace()
-        self.__change_ime()
-        self.__make_shell_by_pope("am broadcast -a ADB_INPUT_TEXT --es msg '%s'", will_input_text)
-        self.__restore_ime()
+        #将光标置于最前面
+        self.tap_move_home()
+        #清楚所有字符
+        self.tap_del(len(now_text)+1)
+        #输入字符
+        self._ime.text(will_input_text)
+
 
 
 
@@ -118,6 +117,25 @@ class ADB():
         :return:
         '''
         self.__make_shell_by_pope("input keyevent 4")
+
+    def tap_move_home(self):
+        '''
+        将输入光标移至最前面
+        :return:
+        '''
+        self.__make_shell_by_pope('input keyevent 122')
+
+    def tap_del(self,count=1):
+        '''
+        点击删除键
+        :param count: 次数
+        :return:
+        '''
+        cmd="input keyevent "
+        for i in range(0,count):
+            cmd+="112 "
+        self.__make_shell_by_pope(cmd)
+
 
     def returnHome(self):
         self.__make_cmd_by_pope("shell input keyevent 3")
@@ -161,13 +179,13 @@ class ADB():
         self.pull_file_to_dsc("/mnt/sdcard/micro_db.db",src)
         self.rm_file("/mnt/sdcard/micro_db.db")
         self.cp_src_file_to_dsc("/data/data/com.tencent.mm/shared_prefs/system_config_prefs.xml","/mnt/sdcard/prefs.xml")
-        self.rm_computer_file(adb.TEMP_XML)
-        self.pull_file_to_dsc("/mnt/sdcard/prefs.xml",adb.TEMP_XML)
+        self.rm_computer_file(TEMP_XML)
+        self.pull_file_to_dsc("/mnt/sdcard/prefs.xml",TEMP_XML)
         self.rm_file("/mnt/sdcard/prefs.xml")
-        with open(adb.TEMP_XML) as file:
+        with open(TEMP_XML) as file:
             strs=file.read()
         uid=(re.compile(r'_uin" value="([-]*[\d]+)"').findall(strs))[0]
-        self.rm_computer_file(adb.TEMP_XML)
+        self.rm_computer_file(TEMP_XML)
         imei=self.get_imei()
         m2 = hashlib.md5()
         m2.update(("%s%s" % (imei,uid)).encode("utf-8"))
@@ -187,21 +205,17 @@ class ADB():
         如果没有成功取得ui文件，则返回False
         :return:
         '''
+        #结束pocoservice
+        self.__make_shell_by_pope('am force-stop com.netease.open.pocoservice')
         self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
-        count=1
-        while True:
-            self.__make_shell_by_pope('uiautomator dump /mnt/sdcard/%s.xml', self._device_id)
-            if self.__make_shell_by_pope_onle_return_sucess('ls /mnt/sdcard/%s.xml',self._device_id,sucess='/mnt/sdcard/%s.xml' % self._device_id):
-                break
-            count+=1
-            if count>=5:
-                return False
-        if os.path.exists(adb.TEMP_UI_XML_SAVE_PATH):
-            if os.path.exists("%s/%s.xml" % (adb.TEMP_UI_XML_SAVE_PATH,self._device_id)):
-                os.remove("%s/%s.xml" % (adb.TEMP_UI_XML_SAVE_PATH,self._device_id))
+        self.__make_shell_by_pope('uiautomator dump /mnt/sdcard/%s.xml', self._device_id)
+        self.__make_shell_by_pope_onle_return_sucess('ls /mnt/sdcard/%s.xml',self._device_id,sucess='/mnt/sdcard/%s.xml' % self._device_id)
+        if os.path.exists(TEMP_UI_XML_SAVE_PATH):
+            if os.path.exists("%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH,self._device_id)):
+                os.remove("%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH,self._device_id))
         else:
-            os.mkdir(adb.TEMP_UI_XML_SAVE_PATH)
-        if self.__make_cmd_by_pope_return_sucess('pull /mnt/sdcard/%s.xml %s',self._device_id, adb.TEMP_UI_XML_SAVE_PATH,sucess="pulled"):
+            os.mkdir(TEMP_UI_XML_SAVE_PATH)
+        if self.__make_cmd_by_pope_return_sucess('pull /mnt/sdcard/%s.xml %s',self._device_id, TEMP_UI_XML_SAVE_PATH,sucess="pulled"):
            self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
            return True
         return False
@@ -216,8 +230,7 @@ class ADB():
         if (args!=None):
             cmd=self._cmd_prefix+(cmd % args)
         tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
+        resault=self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
         if resault=="":
@@ -235,8 +248,7 @@ class ADB():
         if (args!=None):
             cmd = self._cmd_prefix + (cmd % args)
         tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
+        resault=self.__execu_cmd(cmd).strip()
         if sucess!=None:
             resault=resault.strip()
             self.__check_device_not_connect()
@@ -363,8 +375,7 @@ class ADB():
         if (args!=None):
             cmd=cmd_prefix+(cmd % args)
         tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
+        resault=self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
         if resault=="":
@@ -439,8 +450,7 @@ class ADB():
         if (args!=None):
             cmd = cmd_prefix + (cmd % args)
         tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
+        resault=self.__execu_cmd(cmd).strip()
         if sucess!=None:
             resault=resault.strip()
             self.__check_device_not_connect()
@@ -450,6 +460,23 @@ class ADB():
                 return False
         return False
 
+    @staticmethod
+    def __execu_cmd(cmd:str):
+        '''
+        执行cmd
+        :return:
+        '''
+        process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT,
+                                   errors='ignore',
+                                   encoding='gbk')
+        process.wait()
+        resault=process.stdout.read()
+        process.stdout.close()
+        return resault
+
+
     def __check_device_not_connect(self):
         '''
         检查设备是否连接
@@ -457,7 +484,7 @@ class ADB():
         '''
         devices=ADB.getNowConnectDevice()
         if self._device_id not in devices:
-            raise BaseException(adb.DEVICE_NOT_FOUND)
+            raise BaseException(DEVICE_NOT_FOUND)
 
     @property
     def device_id(self):

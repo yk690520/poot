@@ -1,7 +1,9 @@
-import poot.poot.by as By
+from typing import Union
+
+from . import by as By
 from xml.dom.minidom import Element
-from poot.poot import inforPrint
-from poot.adb.adb import ADB
+from ..adb.adb import ADB
+from . import inforPrint
 class Bound():
     #位置信息
     #[0,0][720,1280]
@@ -157,7 +159,7 @@ class UiProxy():
     '''
     此类为ui控件的代理，通过解析xml文件生成。
     '''
-    def __init__(self,nodes:[] or Node,adb:ADB):#当前ui代理所代理的节点
+    def __init__(self,nodes:Union[dict,Node],adb:ADB):#当前ui代理所代理的节点
         self._nodes=[]
         self._adb=adb
         self._focus=(0.5,0.5)#ui的焦点，用于点击或者滑动
@@ -404,7 +406,7 @@ class UiProxy():
             self._adb.tap_x_y(x,y)
         #self._adb.tap_x_y()
     @inforPrint(infor="输入文字")
-    def set_key(self,text,*,infor=None,beforeTime=0,endTime=0):
+    def set_text(self,text,*,infor=None,beforeTime=0,endTime=0):
         '''
         设置键，如果此ui支持输入。这个方法存在bug，当输入框内存在较多的文字的时候将无法输入
         :param text:
@@ -413,21 +415,9 @@ class UiProxy():
         :param endTime:
         :return:
         '''
-        focus=()
-        if len(self._nodes)>=1:
-            node:Node=self._nodes[0]
-            bound:Bound=node.bounds
-            if focus:
-                if type(focus)!=type((1,)):
-                    raise BaseException("焦点必须是元组")
-            else:
-                focus=self._focus#使用预置焦点
-            x_=(bound.right_x-bound.left_x)*focus[0]
-            y_=(bound.right_y-bound.left_y)*focus[1]
-            x=bound.left_x+x_
-            y=bound.left_y+y_
-            self._adb.tap_x_y(x,y)
-        self._adb.set_key(text,self.get_text())
+        self.tap()
+        self._adb.set_text(text,self.get_text())
+
     @inforPrint(infor="输入文字")
     def input(self,text,*,infor=None,beforeTime=0,endTime=0):
         '''

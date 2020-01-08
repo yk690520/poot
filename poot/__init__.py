@@ -1,7 +1,5 @@
-from poot.poot.poot import Poot
-import poot.poot.by as By
-import poot.threads
+from .threads import poot_thread,run
 #对外的装饰器接口
-poot_thread=poot.threads.poot_thread
+poot_thread=poot_thread
 #对外的运行方法
-run=poot.threads.run
+run=run

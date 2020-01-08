@@ -2,7 +2,7 @@
 import threading
 
 import functools,time
-from poot.poot.poot import Poot
+from ..core.api import Poot
 _func=None
 _writing_time=10
 
