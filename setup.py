@@ -7,7 +7,7 @@ setup(
     packages = find_packages(),
 
     #需要安装的依赖
-    requires=[
+    install_requires=[
         'airtest>=1.0.27',
         'pocoui>=1.0.79'
     ],
