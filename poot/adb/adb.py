@@ -97,14 +97,17 @@ class ADB():
         '''
         width,hight=self.__make_shell_by_pope_return_re("wm size").split(":")[1].split("x")
         return int(width),int(hight)
-    def tap_x_y(self,x,y):
+    def tap_x_y(self,x,y,times=None):
         '''
         点击【x,y】对应的坐标点
         :param x:
         :param y:
         :return:
         '''
-        self.__make_shell_by_pope("input tap %s %s",x,y)
+        if times!=None:
+            self.__make_shell_by_pope("input swipe %s %s %s %s %s",x,y,x,y,times*1000)
+        else:
+            self.__make_shell_by_pope("input tap %s %s",x,y)
     def tap_backspace(self):
         '''
         点击退格键

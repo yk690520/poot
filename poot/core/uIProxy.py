@@ -392,18 +392,19 @@ class UiProxy():
             return x,y
 
     @inforPrint(infor="点击")
-    def tap(self,focus:()=None,*,infor=None,beforeTime=0,endTime=0):
+    def tap(self,focus:()=None,times:int=None,*,infor=None,beforeTime=0,endTime=0):
         '''
         设置点击的焦点，仅在当前点击生效
         :param focus:
         :param infor:
         :param beforeTime:
         :param endTime:
+        :param times:点击时长
         :return:
         '''
         if len(self._nodes)>=1:
             x,y=self.get_focus_x_y(focus)
-            self._adb.tap_x_y(x,y)
+            self._adb.tap_x_y(x,y,times)
         #self._adb.tap_x_y()
     @inforPrint(infor="输入文字")
     def set_text(self,text,*,infor=None,beforeTime=0,endTime=0):

@@ -183,7 +183,7 @@ class Poot():
         y2=width*y2
         self._adb.swipe(x1,y1,x2,y2,time)
     @inforPrint(infor="点击")
-    def tap_x_y(self,x:float,y:float,*,infor=None,beroeTime=0,endTime=0):
+    def tap_x_y(self,x:float,y:float,times:int=None,*,infor=None,beroeTime=0,endTime=0):
         '''
         均按照比例进行点击。
         :param x: 0-1的数
@@ -191,12 +191,13 @@ class Poot():
         :param infor:
         :param beroeTime:
         :param endTime:
+        :param times:点击时长
         :return:
         '''
         width,hight=self._adb.get_screen_size()
         x=width*x
         y=hight*y
-        self._adb.tap_x_y(x,y)
+        self._adb.tap_x_y(x,y,times)
     @inforPrint(infor="获得屏幕尺寸")
     def get_screen_size(self,*,infor=None,beroeTime=0,endTime=0):
         return self._adb.get_screen_size()
