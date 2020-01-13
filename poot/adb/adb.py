@@ -139,7 +139,6 @@ class ADB():
             cmd+="112 "
         self.__make_shell_by_pope(cmd)
 
-
     def returnHome(self):
         self.__make_cmd_by_pope("shell input keyevent 3")
     def rm_file(self,file):
@@ -232,7 +231,7 @@ class ADB():
         '''
         if (args!=None):
             cmd=self._cmd_prefix+(cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
@@ -250,7 +249,7 @@ class ADB():
         '''
         if (args!=None):
             cmd = self._cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=self.__execu_cmd(cmd).strip()
         if sucess!=None:
             resault=resault.strip()
@@ -269,7 +268,7 @@ class ADB():
         '''
         if (args != None):
             cmd = self._cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -286,7 +285,7 @@ class ADB():
         '''
         if (args != None):
             cmd = self._cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -302,7 +301,7 @@ class ADB():
         cmd_prefix=self._cmd_prefix+"shell su -c \""
         if (args!=None):
             cmd=cmd_prefix+(cmd % args)+"\""
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=os.popen(cmd)
         resault=resault.read()
         resault = resault.strip()
@@ -322,7 +321,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell su -c \""
         if (args!=None):
             cmd = cmd_prefix + (cmd % args)+"\""
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=os.popen(cmd)
         resault=resault.read()
         if sucess!=None:
@@ -343,7 +342,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell su -c \""
         if (args != None):
             cmd = cmd_prefix + (cmd % args)+"\""
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -361,7 +360,7 @@ class ADB():
         cmd_prefix=self._cmd_prefix + "shell su -c \""
         if (args != None):
             cmd = cmd_prefix + (cmd % args)+"\""
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -377,7 +376,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell "
         if (args!=None):
             cmd=cmd_prefix+(cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
@@ -396,7 +395,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell "
         if (args!=None):
             cmd = cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=os.popen(cmd)
         resault=resault.read()
         if sucess!=None:
@@ -417,7 +416,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell "
         if (args != None):
             cmd = cmd_prefix+ (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -435,7 +434,7 @@ class ADB():
         cmd_prefix= self._cmd_prefix + "shell "
         if (args != None):
             cmd = cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault = os.popen(cmd)
         resault = resault.read()
         if resault:
@@ -452,7 +451,7 @@ class ADB():
         cmd_prefix = self._cmd_prefix + "shell "
         if (args!=None):
             cmd = cmd_prefix + (cmd % args)
-        tools.get_logger().info(cmd)
+        # tools.get_logger().info(cmd)
         resault=self.__execu_cmd(cmd).strip()
         if sucess!=None:
             resault=resault.strip()

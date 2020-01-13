@@ -9,7 +9,7 @@ def inforPrint(infor,beforeTime=0,endTime=0):
             if 'infor' in kwargs:
                 if kwargs['infor']!=None:
                     tempInfor=kwargs['infor']
-            print(self.device_id+'：'+tempInfor)
+            # print(self.device_id+'：'+tempInfor)
             tempBeforeTime=beforeTime
             if 'beforeTime' in kwargs:
                 if kwargs['beforeTime']!=0:
