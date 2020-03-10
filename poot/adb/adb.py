@@ -468,6 +468,7 @@ class ADB():
         执行cmd
         :return:
         '''
+        print(cmd)
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,

@@ -1,4 +1,7 @@
+import re
 from typing import Union
+
+import math
 
 from . import by as By
 from xml.dom.minidom import Element
@@ -168,11 +171,41 @@ class UiProxy():
                 self._nodes.append(node)
         else:#传入了单个dom节点
             self._nodes.append(nodes)#自建node节点
+
     def __getitem__(self, item):
         node_count=self.get_node_count()
         if item>=node_count:
             raise IndexError("索引超出")
+        if item<0:
+            if item+node_count<0:
+                raise IndexError("索引超出")
+            item=item+node_count
+        #a b c d
+        #0 1 2 3
+        #-4 -3 -2 -1
         return UiProxy(self._nodes[item],self._adb)
+
+
+    def __len__(self):
+        return self.get_node_count()
+
+    def parent(self):
+        '''
+        获取当前节点的父节点
+        :return:
+        '''
+        if len(self._nodes)>=1:
+            parentNode:Node=self._nodes[0].father_node
+            return UiProxy(parentNode,self._adb)
+
+    def sibling(self,text=None,*,resource_id=None,package=None,clazz=None,desc=None,name=None,part_text=None,**kwargs):
+        '''
+        获取当前节点的兄弟节点
+        :return:
+        '''
+        return self.parent().child(text=text,resource_id=resource_id,package=package,clazz=clazz,desc=desc,name=name,part_text=part_text,**kwargs)
+
+
     def offspring(self,text=None,*,resource_id=None,package=None,clazz=None,desc=None,name=None,part_text=None,**kwargs):
         '''
         查找当前节点的后代节点（不仅限于子节点，也包括子节点的子节点）
@@ -196,6 +229,7 @@ class UiProxy():
         if part_text:
             kwargs["part_text"]=part_text
         if kwargs:
+            self.__process_param_to_find(kwargs)
             for node in self._nodes:
                 nodes = node.childs
                 for node in nodes:
@@ -210,26 +244,42 @@ class UiProxy():
         if all_node:
             return UiProxy(all_node,self._adb)
 
+    def __process_param_to_find(self,kwargs):
+        # 对kwargs进行处理，如果key是以M结尾,则将字符串转为re格式的正则对象
+        for key, value in kwargs.items():
+            if key[-1] == 'M':
+                kwargs[key] = re.compile(value)
+
     def __compater_node_cointas(self,node,**kwargs):
         for key,value in kwargs.items():
             flag=False
-            if key in By.find_map:
-                key=By.find_map.get(key)
-                if key==By.part_text:
-                    if node.get_attr("text"):
-                        if value in node.get_attr("text"):
-                            flag=True
-                else:
+            #使用匹配模式
+            if key[-1]=='M':
+                key=key[0:-1]
+                if key in By.find_map:
+                    key=By.find_map.get(key)
+                    if key==By.part_text:
+                        key=By.text
                     if node.get_attr(key):
-                        if value==node.get_attr(key):
+                        if value.fullmatch(node.get_attr(key)):
                             flag=True
+            else:
+                if key in By.find_map:
+                    key=By.find_map.get(key)
+                    if key==By.part_text:
+                        if node.get_attr("text"):
+                            if value in node.get_attr("text"):
+                                flag=True
+                    else:
+                        if node.get_attr(key):
+                            if value==node.get_attr(key):
+                                flag=True
             if not flag:
                 return False
         return True
 
     def __traverse_node(self,node:Node,**kwargs):
         all_node=[]
-
         if kwargs:
             if self.__compater_node_cointas(node,**kwargs):
                 all_node.append(node)
@@ -263,6 +313,7 @@ class UiProxy():
         if part_text:
             kwargs["part_text"]=part_text
         if kwargs:
+            self.__process_param_to_find(kwargs)
             #指定查找对应子节点的text属性值来返回子节点的
             for node in self._nodes:
                 #获取当前节点的子节点
