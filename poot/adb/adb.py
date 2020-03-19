@@ -208,7 +208,7 @@ class ADB():
         :return:
         '''
         #结束pocoservice
-        self.__make_shell_by_pope('am force-stop com.netease.open.pocoservice')
+        # self.__make_shell_by_pope('am force-stop com.netease.open.pocoservice')
         self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
         self.__make_shell_by_pope('uiautomator dump /mnt/sdcard/%s.xml', self._device_id)
         self.__make_shell_by_pope_onle_return_sucess('ls /mnt/sdcard/%s.xml',self._device_id,sucess='/mnt/sdcard/%s.xml' % self._device_id)
@@ -468,7 +468,6 @@ class ADB():
         执行cmd
         :return:
         '''
-        print(cmd)
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
