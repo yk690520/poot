@@ -119,6 +119,11 @@ class Poot():
     def freeze(self):
         self._is_freeze=True
         return self
+
+    def clear_freezed(self):
+        self._is_freeze=False
+        return self
+
     def __enter__(self):
         self._is_freeze = True
         return self

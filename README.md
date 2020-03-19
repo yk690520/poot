@@ -9,6 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
+版本：v1.5
+日期：2020/3/19
+1、增加去掉冻结的方法
+
 版本：v1.4
 日期：2020/3/11
 1、去掉adb控制台输出
