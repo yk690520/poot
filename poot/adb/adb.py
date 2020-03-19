@@ -23,6 +23,7 @@ class ADB():
         if deviceList == []:
             return []
         return deviceList
+
     def __init__(self,device_id:str):
         self._device_id=device_id
         self._adb_path=ADB_PATH
@@ -30,7 +31,10 @@ class ADB():
         self._airtestADB=AirtestADB(device_id)
         self._ime=YosemiteIme(self._airtestADB)
         self._ime.start()
+        self.__width=-1
+        self.__height=-1
         # self.__install_ime()
+
     def __install_ime(self):
         re = self.__make_shell_by_pope_return_re("ime list -a -s")
         if "com.android.adbkeyboard/.AdbIME" in re:
@@ -95,8 +99,12 @@ class ADB():
         获取屏幕分辨率，
         :return: （宽，高)
         '''
-        width,hight=self.__make_shell_by_pope_return_re("wm size").split(":")[1].split("x")
-        return int(width),int(hight)
+        if self.__width==-1:
+            width,height=self.__make_shell_by_pope_return_re("wm size").split(":")[1].split("x")
+            self.__width=int(width)
+            self.__height=int(height)
+        return self.__width,self.__height
+
     def tap_x_y(self,x,y,times=None):
         '''
         点击【x,y】对应的坐标点
