@@ -1,11 +1,18 @@
 import os
 import subprocess
 import re,hashlib
+import airtest.core.android.adb as airAdb
 from airtest.core.android.ime import YosemiteIme
-from .. import tools
 from io import StringIO
 from airtest.core.android.adb import ADB as AirtestADB
-from . import ADB_PATH,IME_PATH,DEVICE_NOT_FOUND,TEMP_UI_XML_SAVE_PATH,TEMP_XML
+#异常
+DEVICE_NOT_FOUND="设备已断开连接"
+#其它配置
+TEMP_UI_XML_SAVE_PATH="%s/uiTemp" % os.getcwd()#ui获取文件
+TEMP_XML="%s/temp_xml.xml" % os.getcwd()#临时xml
+IME_PATH="%s/core/adb/config/ime.apk" % os.getcwd()
+ADB_PATH=airAdb.ADB.builtin_adb_path()
+airAdb.LOGGING.disabled=True
 class ADB():
     @staticmethod
     def getNowConnectDevice():
@@ -45,6 +52,7 @@ class ADB():
     def __restore_ime(self):
         self.__make_shell_by_pope_return_sucess("ime set %s" % self._ime,
                                                 sucess=self._ime)
+
     def swipe(self,x1,y1,x2,y2,time):
         '''
         在屏幕上滑动
@@ -56,8 +64,6 @@ class ADB():
         :return:
         '''
         self.__make_shell_by_pope("input swipe %s %s %s %s %s", x1, y1,x2,y2,time)
-
-
 
     def input(self,text):
         '''
@@ -82,9 +88,6 @@ class ADB():
         #输入字符
         self._ime.text(will_input_text)
 
-
-
-
     def install_app(self,path):
         '''
         安装path的apk
@@ -93,14 +96,14 @@ class ADB():
         '''
         return self.__make_cmd_by_pope_return_sucess("install -r %s",path,sucess="Success")
 
-
     def get_screen_size(self):
         '''
         获取屏幕分辨率，
         :return: （宽，高)
         '''
         if self.__width==-1:
-            width,height=self.__make_shell_by_pope_return_re("wm size").split(":")[1].split("x")
+            display=self._airtestADB.get_display_info()
+            width,height=display['width'],display['height']
             self.__width=int(width)
             self.__height=int(height)
         return self.__width,self.__height
@@ -116,12 +119,14 @@ class ADB():
             self.__make_shell_by_pope("input swipe %s %s %s %s %s",x,y,x,y,times*1000)
         else:
             self.__make_shell_by_pope("input tap %s %s",x,y)
+
     def tap_backspace(self):
         '''
         点击退格键
         :return:
         '''
         self.__make_shell_by_pope("input keyevent 67")
+
     def tap_return(self):
         '''
         点击返回键
@@ -149,8 +154,10 @@ class ADB():
 
     def returnHome(self):
         self.__make_cmd_by_pope("shell input keyevent 3")
+
     def rm_file(self,file):
         self.__make_shell_by_pope("rm %s" % file)
+
     def cp_src_file_to_dsc(self,src_file,dsc):
         '''
         将手机指定文件移动到指定位置
@@ -159,6 +166,7 @@ class ADB():
         :return:
         '''
         self.__make_shell_su_by_pope("cp %s %s",src_file,dsc)
+
     def pull_file_to_dsc(self,src_file,dsc):
         '''
         将src_file提取到电脑上的dsc文件夹
@@ -167,6 +175,7 @@ class ADB():
         :return:
         '''
         self.__make_cmd_by_pope_return_sucess('pull %s %s' % (src_file,dsc),sucess="pulled")
+
     def get_imei(self):
         res=self.__make_shell_by_pope_return_re("service call iphonesubinfo 1")
         imei1 = (re.compile(r"'[\.]+((\d\.)+)'").findall(res))[0][0]
@@ -177,6 +186,7 @@ class ADB():
         imei3 = "".join(imei3.split("."))
         imei = imei1 + imei2 + imei3
         return imei
+
     def get_wx_databases(self,src):
         '''
         将微信数据库提取至【src】目录,并计算其数据库密码
@@ -200,6 +210,7 @@ class ADB():
         m2 = hashlib.md5()
         m2.update(("%s%s" % (imei,uid)).encode("utf-8"))
         return m2.hexdigest()[:7]
+
     def rm_computer_file(self,file):
         '''
         删除电脑上的文件
@@ -208,7 +219,6 @@ class ADB():
         '''
         if os.path.exists(file):
             os.remove(file)
-
 
     def getNowUI(self):
         '''
@@ -247,6 +257,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_cmd_by_pope_return_sucess(self,cmd,*args,sucess):
         '''
         此方法需要返回包含指定的sucess，否则认为执行失败
@@ -267,6 +278,7 @@ class ADB():
             else:
                 return False
         return False
+
     def __make_cmd_by_pope_return_true_or_false(self,cmd,*args):
         '''
         只有有结果返回，即认为执行成功
@@ -284,6 +296,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_cmd_by_pope_return_re(self,cmd,*args):
         '''
         此方法返回执行后的结果
@@ -299,6 +312,7 @@ class ADB():
         if resault:
             self.__check_device_not_connect()
             return str(resault).strip()
+
     def __make_shell_su_by_pope(self,cmd,*args):
         '''
         无需返回结果，只要执行返回“”则认为成功，否则认为失败
@@ -318,6 +332,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_shell_su_by_pope_return_sucess(self,cmd,*args,sucess):
         '''
         此方法需要返回指定的sucess，否则认为执行失败
@@ -340,6 +355,7 @@ class ADB():
             else:
                 return False
         return False
+
     def __make_shell_su_by_pope_return_true_or_false(self,cmd,*args):
         '''
         只有有结果返回，即认为执行成功
@@ -358,6 +374,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_shell_su_by_pope_return_re(self,cmd,*args):
         '''
         此方法返回执行后的结果
@@ -374,6 +391,7 @@ class ADB():
         if resault:
             self.__check_device_not_connect()
             return str(resault).strip()
+
     def __make_shell_by_pope(self,cmd,*args):
         '''
         无需返回结果，只要执行则认为成功
@@ -392,6 +410,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_shell_by_pope_return_sucess(self,cmd,*args,sucess):
         '''
         此方法需要返回包含指定的sucess，否则认为执行失败
@@ -414,6 +433,7 @@ class ADB():
             else:
                 return False
         return False
+
     def __make_shell_by_pope_return_true_or_false(self,cmd,*args):
         '''
         只有有结果返回，即认为执行成功
@@ -432,6 +452,7 @@ class ADB():
             return True
         else:
             return False
+
     def __make_shell_by_pope_return_re(self,cmd,*args):
         '''
         此方法返回执行后的结果
@@ -448,6 +469,7 @@ class ADB():
         if resault:
             self.__check_device_not_connect()
             return str(resault).strip()
+
     def __make_shell_by_pope_onle_return_sucess(self,cmd,*args,sucess):
         '''
         此方法需要返回指定的sucess，否则认为执行失败
@@ -486,7 +508,6 @@ class ADB():
         process.stdout.close()
         return resault
 
-
     def __check_device_not_connect(self):
         '''
         检查设备是否连接
@@ -499,3 +520,4 @@ class ADB():
     @property
     def device_id(self):
         return self._device_id
+

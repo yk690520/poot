@@ -1,8 +1,10 @@
 import re
 
 from poot.core.api import Poot
+from poot.adb.adb import ADB
 
-poot=Poot('5LM7N16812002521')
 
 
-ui=poot(resource_id="more").tap((0.8,0.5))
+adb=ADB('5LM7N16812002521')
+
+adb.get_screen_size()

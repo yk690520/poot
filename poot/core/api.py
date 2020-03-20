@@ -187,6 +187,7 @@ class Poot():
         x2=width*x2
         y2=width*y2
         self._adb.swipe(x1,y1,x2,y2,time)
+
     @inforPrint(infor="点击")
     def tap_x_y(self,x:float,y:float,times:int=None,*,infor=None,beroeTime=0,endTime=0):
         '''
