@@ -9,9 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
-版本：v1.7
+版本：v1.7.1
 日期：2020/3/20
 1、修改屏幕尺寸获取方法
+2、关闭pope的stdin
 
 版本：v1.6
 日期：2020/3/19

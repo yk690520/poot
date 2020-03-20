@@ -7,4 +7,4 @@ from poot.adb.adb import ADB
 
 adb=ADB('5LM7N16812002521')
 
-adb.get_screen_size()
+adb.tap_x_y(120,132)

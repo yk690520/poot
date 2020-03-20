@@ -501,11 +501,11 @@ class ADB():
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
-                                   errors='ignore',
-                                   encoding='gbk')
+                                   errors='ignore')
         process.wait()
         resault=process.stdout.read()
         process.stdout.close()
+        process.stdin.close()
         return resault
 
     def __check_device_not_connect(self):
