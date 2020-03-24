@@ -53,9 +53,7 @@ class Poot():
         '''
         count=1
         while count<3:
-            if not self._adb.getNowUI():
-                count+=1
-                continue
+            self._adb.getNowUI()
             xml = "%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH, self._device_id)
             if os.path.exists(xml):
                 DomTree = parse(xml)

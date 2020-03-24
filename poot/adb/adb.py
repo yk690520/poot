@@ -235,10 +235,9 @@ class ADB():
                 os.remove("%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH,self._device_id))
         else:
             os.mkdir(TEMP_UI_XML_SAVE_PATH)
-        if self.__make_cmd_by_pope_return_sucess('pull /mnt/sdcard/%s.xml %s',self._device_id, TEMP_UI_XML_SAVE_PATH,sucess="pulled"):
-           self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
-           return True
-        return False
+        self.__make_cmd_by_pope_return_sucess('pull /mnt/sdcard/%s.xml %s',self._device_id, TEMP_UI_XML_SAVE_PATH,sucess="pulled")
+        self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
+
 
     def __make_cmd_by_pope(self,cmd,*args):
         '''
