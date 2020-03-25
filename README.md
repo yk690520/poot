@@ -9,6 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
+版本：v1.8
+日期：2020/3/25
+1、重构了底层adb方法，减少代码量，解决adb命令含有空格执行出错问题
+
 版本：v1.7.1
 日期：2020/3/20
 1、修改屏幕尺寸获取方法

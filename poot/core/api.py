@@ -53,7 +53,9 @@ class Poot():
         '''
         count=1
         while count<3:
-            self._adb.getNowUI()
+            if not self._adb.getNowUI():
+                count+=1
+                continue
             xml = "%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH, self._device_id)
             if os.path.exists(xml):
                 DomTree = parse(xml)
@@ -154,9 +156,7 @@ class Poot():
         :return:
         '''
         self._adb.returnHome()
-    @inforPrint(infor="获取微信数据库")
-    def get_wx_databases(self,dsc,*,infor=None,beforeTime=0,endTime=0):
-        return self._adb.get_wx_databases(dsc)
+
     @inforPrint(infor="等待UI出现")
     def wait_ui_appear(self,value,by:By=By.text,wait_time:int=30,*,infor=None,beroeTime=0,endTime=0):
         try:

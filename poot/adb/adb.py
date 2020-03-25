@@ -34,7 +34,7 @@ class ADB():
     def __init__(self,device_id:str):
         self._device_id=device_id
         self._adb_path=ADB_PATH
-        self._cmd_prefix="%s -s %s " % (self._adb_path,device_id)
+        self._cmd_prefix=(self._adb_path,"-s",device_id)
         self._airtestADB=AirtestADB(device_id)
         self._ime=YosemiteIme(self._airtestADB)
         self._ime.start()
@@ -43,15 +43,14 @@ class ADB():
         # self.__install_ime()
 
     def __install_ime(self):
-        re = self.__make_shell_by_pope_return_re("ime list -a -s")
+        re = self.__exe_shell_cmd("ime","list","-a","-s")
         if "com.android.adbkeyboard/.AdbIME" in re:
             return
         else:
             self.install_app(IME_PATH)
 
     def __restore_ime(self):
-        self.__make_shell_by_pope_return_sucess("ime set %s" % self._ime,
-                                                sucess=self._ime)
+        self.__exe_shell_cmd("ime","set",self._ime,success=self._ime)
 
     def swipe(self,x1,y1,x2,y2,time):
         '''
@@ -63,7 +62,8 @@ class ADB():
         :param time: 滑动时间
         :return:
         '''
-        self.__make_shell_by_pope("input swipe %s %s %s %s %s", x1, y1,x2,y2,time)
+        self.__exe_shell_cmd("input","swipe",x1, y1,x2,y2,time)
+
 
     def input(self,text):
         '''
@@ -94,7 +94,7 @@ class ADB():
         :param path:
         :return:
         '''
-        return self.__make_cmd_by_pope_return_sucess("install -r %s",path,sucess="Success")
+        return self.__exe_cmd("install","-r",path,success="Success")
 
     def get_screen_size(self):
         '''
@@ -116,30 +116,30 @@ class ADB():
         :return:
         '''
         if times!=None:
-            self.__make_shell_by_pope("input swipe %s %s %s %s %s",x,y,x,y,times*1000)
+            self.__exe_shell_cmd("input","swipe",x,y,x,y,times*1000)
         else:
-            self.__make_shell_by_pope("input tap %s %s",x,y)
+            self.__exe_shell_cmd("input","tap",x,y)
 
     def tap_backspace(self):
         '''
         点击退格键
         :return:
         '''
-        self.__make_shell_by_pope("input keyevent 67")
+        self.__exe_shell_cmd("input","keyevent","67")
 
     def tap_return(self):
         '''
         点击返回键
         :return:
         '''
-        self.__make_shell_by_pope("input keyevent 4")
+        self.__exe_shell_cmd("input","keyevent","4")
 
     def tap_move_home(self):
         '''
         将输入光标移至最前面
         :return:
         '''
-        self.__make_shell_by_pope('input keyevent 122')
+        self.__exe_shell_cmd("input","keyevent","122")
 
     def tap_del(self,count=1):
         '''
@@ -147,25 +147,16 @@ class ADB():
         :param count: 次数
         :return:
         '''
-        cmd="input keyevent "
+        cmd=["input","keyevent"]
         for i in range(0,count):
-            cmd+="112 "
-        self.__make_shell_by_pope(cmd)
+            cmd.append("112")
+        self.__exe_shell_cmd(*cmd)
 
     def returnHome(self):
-        self.__make_cmd_by_pope("shell input keyevent 3")
+        self.__exe_shell_cmd("input","keyevent","3")
 
     def rm_file(self,file):
-        self.__make_shell_by_pope("rm %s" % file)
-
-    def cp_src_file_to_dsc(self,src_file,dsc):
-        '''
-        将手机指定文件移动到指定位置
-        :param src_file:
-        :param dsc_file:
-        :return:
-        '''
-        self.__make_shell_su_by_pope("cp %s %s",src_file,dsc)
+        self.__exe_shell_cmd("rm",file)
 
     def pull_file_to_dsc(self,src_file,dsc):
         '''
@@ -174,10 +165,10 @@ class ADB():
         :param dsc:
         :return:
         '''
-        self.__make_cmd_by_pope_return_sucess('pull %s %s' % (src_file,dsc),sucess="pulled")
+        self.__exe_cmd("pull",src_file,dsc,success="pulled")
 
     def get_imei(self):
-        res=self.__make_shell_by_pope_return_re("service call iphonesubinfo 1")
+        res=self.__exe_shell_cmd("service","call","iphonesubinfo","1")
         imei1 = (re.compile(r"'[\.]+((\d\.)+)'").findall(res))[0][0]
         imei2 = (re.compile(r"'((\d\.)+)'").findall(res))[0][0]
         imei3 = (re.compile(r"'((\d\.)+).+ +'").findall(res))[0][0]
@@ -187,29 +178,6 @@ class ADB():
         imei = imei1 + imei2 + imei3
         return imei
 
-    def get_wx_databases(self,src):
-        '''
-        将微信数据库提取至【src】目录,并计算其数据库密码
-        :param src:
-        :return:
-        '''
-        resautl=self.__make_shell_su_by_pope_return_re("ls /data/data/com.tencent.mm/MicroMsg")
-        databases_path="/data/data/com.tencent.mm/MicroMsg/%s/EnMicroMsg.db" % resautl.split("\n\n")[0]
-        self.cp_src_file_to_dsc(databases_path,"/mnt/sdcard/micro_db.db")
-        self.pull_file_to_dsc("/mnt/sdcard/micro_db.db",src)
-        self.rm_file("/mnt/sdcard/micro_db.db")
-        self.cp_src_file_to_dsc("/data/data/com.tencent.mm/shared_prefs/system_config_prefs.xml","/mnt/sdcard/prefs.xml")
-        self.rm_computer_file(TEMP_XML)
-        self.pull_file_to_dsc("/mnt/sdcard/prefs.xml",TEMP_XML)
-        self.rm_file("/mnt/sdcard/prefs.xml")
-        with open(TEMP_XML) as file:
-            strs=file.read()
-        uid=(re.compile(r'_uin" value="([-]*[\d]+)"').findall(strs))[0]
-        self.rm_computer_file(TEMP_XML)
-        imei=self.get_imei()
-        m2 = hashlib.md5()
-        m2.update(("%s%s" % (imei,uid)).encode("utf-8"))
-        return m2.hexdigest()[:7]
 
     def rm_computer_file(self,file):
         '''
@@ -227,269 +195,76 @@ class ADB():
         '''
         #结束pocoservice
         # self.__make_shell_by_pope('am force-stop com.netease.open.pocoservice')
-        self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
-        self.__make_shell_by_pope('uiautomator dump /mnt/sdcard/%s.xml', self._device_id)
-        self.__make_shell_by_pope_onle_return_sucess('ls /mnt/sdcard/%s.xml',self._device_id,sucess='/mnt/sdcard/%s.xml' % self._device_id)
+        self.__exe_shell_cmd("rm","/mnt/sdcard/%s.xml" % self._device_id)
+        self.__exe_shell_cmd("uiautomator","dump","/mnt/sdcard/%s.xml" % self._device_id)
         if os.path.exists(TEMP_UI_XML_SAVE_PATH):
             if os.path.exists("%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH,self._device_id)):
                 os.remove("%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH,self._device_id))
         else:
             os.mkdir(TEMP_UI_XML_SAVE_PATH)
-        self.__make_cmd_by_pope_return_sucess('pull /mnt/sdcard/%s.xml %s',self._device_id, TEMP_UI_XML_SAVE_PATH,sucess="pulled")
-        self.__make_cmd_by_pope('shell rm /mnt/sdcard/%s.xml', self._device_id)
+        if self.__exe_cmd("pull","/mnt/sdcard/%s.xml" % self._device_id,TEMP_UI_XML_SAVE_PATH,success="pulled"):
+            self.__exe_shell_cmd("rm","/mnt/sdcard/%s.xml" % self._device_id)
+            return True
+        return False
 
 
-    def __make_cmd_by_pope(self,cmd,*args):
+    def __exe_cmd(self,*cmd,success=None):
         '''
-        无需返回结果，只要执行则认为成功
-        :param cmd:shell
-        :param args:
+        执行cmd
+        :param cmd:
+        :param success:
         :return:
         '''
-        if (args!=None):
-            cmd=self._cmd_prefix+(cmd % args)
-        # tools.get_logger().info(cmd)
-        resault=self.__execu_cmd(cmd)
+        cmd = self.__building_cmd(*cmd)
+        resault = self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
-        if resault=="":
-            return True
-        else:
-            return False
-
-    def __make_cmd_by_pope_return_sucess(self,cmd,*args,sucess):
-        '''
-        此方法需要返回包含指定的sucess，否则认为执行失败
-        :param cmd:
-        :param args:
-        :param sucess:
-        :return:
-        '''
-        if (args!=None):
-            cmd = self._cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault=self.__execu_cmd(cmd).strip()
-        if sucess!=None:
-            resault=resault.strip()
-            self.__check_device_not_connect()
-            if sucess in resault:
+        if success != None:
+            if success in resault:
                 return True
             else:
                 return False
-        return False
+        return resault
 
-    def __make_cmd_by_pope_return_true_or_false(self,cmd,*args):
+
+    def __exe_shell_cmd(self,*cmd,success=None):
         '''
-        只有有结果返回，即认为执行成功
+        执行cmd
         :param cmd:
-        :param args:
+        :param success:如果传入success，则表示结果中包含success才执行成功
         :return:
         '''
-        if (args != None):
-            cmd = self._cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return True
-        else:
-            return False
-
-    def __make_cmd_by_pope_return_re(self,cmd,*args):
-        '''
-        此方法返回执行后的结果
-        :param cmd:
-        :param args:
-        :return:
-        '''
-        if (args != None):
-            cmd = self._cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return str(resault).strip()
-
-    def __make_shell_su_by_pope(self,cmd,*args):
-        '''
-        无需返回结果，只要执行返回“”则认为成功，否则认为失败
-        :param cmd:shell
-        :param args:
-        :return:
-        '''
-        cmd_prefix=self._cmd_prefix+"shell su -c \""
-        if (args!=None):
-            cmd=cmd_prefix+(cmd % args)+"\""
-        # tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
+        cmd = self.__building_cmd("shell",*cmd)
+        resault = self.__execu_cmd(cmd)
         resault = resault.strip()
         self.__check_device_not_connect()
-        if resault=="":
-            return True
-        else:
-            return False
-
-    def __make_shell_su_by_pope_return_sucess(self,cmd,*args,sucess):
-        '''
-        此方法需要返回指定的sucess，否则认为执行失败
-        :param cmd:
-        :param args:
-        :param sucess:
-        :return:
-        '''
-        cmd_prefix = self._cmd_prefix + "shell su -c \""
-        if (args!=None):
-            cmd = cmd_prefix + (cmd % args)+"\""
-        # tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
-        if sucess!=None:
-            resault=resault.strip()
-            self.__check_device_not_connect()
-            if sucess in resault:
+        if success!=None:
+            if success in resault:
                 return True
             else:
                 return False
-        return False
+        return resault
 
-    def __make_shell_su_by_pope_return_true_or_false(self,cmd,*args):
+
+
+
+    def __building_cmd(self,*args):
         '''
-        只有有结果返回，即认为执行成功
-        :param cmd:
+        构造cmd
         :param args:
         :return:
         '''
-        cmd_prefix = self._cmd_prefix + "shell su -c \""
-        if (args != None):
-            cmd = cmd_prefix + (cmd % args)+"\""
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return True
-        else:
-            return False
-
-    def __make_shell_su_by_pope_return_re(self,cmd,*args):
-        '''
-        此方法返回执行后的结果
-        :param cmd:
-        :param args:
-        :return:
-        '''
-        cmd_prefix=self._cmd_prefix + "shell su -c \""
-        if (args != None):
-            cmd = cmd_prefix + (cmd % args)+"\""
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return str(resault).strip()
-
-    def __make_shell_by_pope(self,cmd,*args):
-        '''
-        无需返回结果，只要执行则认为成功
-        :param cmd:shell
-        :param args:
-        :return:
-        '''
-        cmd_prefix = self._cmd_prefix + "shell "
-        if (args!=None):
-            cmd=cmd_prefix+(cmd % args)
-        # tools.get_logger().info(cmd)
-        resault=self.__execu_cmd(cmd)
-        resault = resault.strip()
-        self.__check_device_not_connect()
-        if resault=="":
-            return True
-        else:
-            return False
-
-    def __make_shell_by_pope_return_sucess(self,cmd,*args,sucess):
-        '''
-        此方法需要返回包含指定的sucess，否则认为执行失败
-        :param cmd:
-        :param args:
-        :param sucess:
-        :return:
-        '''
-        cmd_prefix = self._cmd_prefix + "shell "
-        if (args!=None):
-            cmd = cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault=os.popen(cmd)
-        resault=resault.read()
-        if sucess!=None:
-            resault=resault.strip()
-            self.__check_device_not_connect()
-            if sucess in resault:
-                return True
+        cmdTuple=self._cmd_prefix+args
+        cmdList=[]
+        for word in cmdTuple:
+            word=str(word)
+            if " " in word:
+                cmdList.append('"%s"' % word)
             else:
-                return False
-        return False
+                cmdList.append(word)
+        return " ".join(cmdList)
 
-    def __make_shell_by_pope_return_true_or_false(self,cmd,*args):
-        '''
-        只有有结果返回，即认为执行成功
-        :param cmd:
-        :param args:
-        :return:
-        '''
-        cmd_prefix = self._cmd_prefix + "shell "
-        if (args != None):
-            cmd = cmd_prefix+ (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return True
-        else:
-            return False
 
-    def __make_shell_by_pope_return_re(self,cmd,*args):
-        '''
-        此方法返回执行后的结果
-        :param cmd:
-        :param args:
-        :return:
-        '''
-        cmd_prefix= self._cmd_prefix + "shell "
-        if (args != None):
-            cmd = cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault = os.popen(cmd)
-        resault = resault.read()
-        if resault:
-            self.__check_device_not_connect()
-            return str(resault).strip()
-
-    def __make_shell_by_pope_onle_return_sucess(self,cmd,*args,sucess):
-        '''
-        此方法需要返回指定的sucess，否则认为执行失败
-        :param cmd:
-        :param args:
-        :param sucess:
-        :return:
-        '''
-        cmd_prefix = self._cmd_prefix + "shell "
-        if (args!=None):
-            cmd = cmd_prefix + (cmd % args)
-        # tools.get_logger().info(cmd)
-        resault=self.__execu_cmd(cmd).strip()
-        if sucess!=None:
-            resault=resault.strip()
-            self.__check_device_not_connect()
-            if sucess==resault:
-                return True
-            else:
-                return False
-        return False
 
     @staticmethod
     def __execu_cmd(cmd:str):
@@ -497,7 +272,6 @@ class ADB():
         执行cmd
         :return:
         '''
-        print(cmd)
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
