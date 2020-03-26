@@ -276,8 +276,13 @@ class ADB():
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
                                    errors='ignore')
-        process.wait()
-        resault=process.stdout.read()
+        stdout=process.stdout
+        resault=""
+        while True:
+            stdText =stdout.readline()
+            if stdText == "":
+                break
+            resault+=stdText
         process.stdout.close()
         process.stdin.close()
         return resault
@@ -295,3 +300,8 @@ class ADB():
     def device_id(self):
         return self._device_id
 
+    def exe_cmd(self,*cmd,success=None):
+        return self.__exe_cmd(*cmd,success=success)
+
+    def exe_shell_adb(self,*adb,success=None):
+        return self.__exe_shell_cmd(*adb,success=success)

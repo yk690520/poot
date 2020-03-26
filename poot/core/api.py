@@ -1,12 +1,8 @@
 #通过poot获取到将节点信息进行解析
 from shutil import rmtree
 from xml.dom.minidom import parse
-import time,os
-
+import os
 from io import StringIO
-
-from airtest.core.android.ime import YosemiteIme
-
 from ..adb.adb import ADB,ADB_PATH,TEMP_UI_XML_SAVE_PATH
 from .uIProxy import Node
 from . import NOT_FOUND_UI
@@ -26,7 +22,6 @@ class Poot():
             if s == '':
                 break
             s = s.split()
-
             if s != [] and (s[0] != 'List' or s[0]=='*'):
                 deviceList.append([s[0],s[1]])
         if deviceList == []:
@@ -101,7 +96,6 @@ class Poot():
             else:
                 # 返回根节点代理ui
                 return self.__resolve_node(self._node)
-
         else:
             #如果是冻结的
             if not self._node:
@@ -149,6 +143,11 @@ class Poot():
     @property
     def device_id(self):
         return self._device_id
+
+    @property
+    def adb(self):
+        return self._adb
+
     @inforPrint(infor="返回桌面")
     def return_home(self,*,infor=None,beforeTime=0,endTime=0):
         '''
@@ -165,6 +164,7 @@ class Poot():
                 return True
         except:
             return False
+
     @inforPrint(infor="滑动")
     def swipe(self,x1:float,y1:float,x2:float,y2:float,time:int=200,*,infor=None,beroeTime=0,endTime=0):
         '''
@@ -202,9 +202,11 @@ class Poot():
         x=width*x
         y=hight*y
         self._adb.tap_x_y(x,y,times)
+
     @inforPrint(infor="获得屏幕尺寸")
     def get_screen_size(self,*,infor=None,beroeTime=0,endTime=0):
         return self._adb.get_screen_size()
+
     @inforPrint(infor="输入文字")
     def input(self,text,*,infor=None,beroeTime=0,endTime=0):
         '''

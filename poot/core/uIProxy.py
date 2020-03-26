@@ -333,6 +333,7 @@ class UiProxy():
             all_node=self.__del_same_node(all_node)
         if all_node:
             return UiProxy(all_node,self._adb)
+
     def __del_same_node(self,all_node:[]):
         '''
         比较comper_node是否和all_node中的某一个node相同，如果相同则返回原始all_node,不相同则加入comper_node并返回
