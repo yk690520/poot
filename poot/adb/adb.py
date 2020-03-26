@@ -276,6 +276,7 @@ class ADB():
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
                                    errors='ignore')
+
         stdout=process.stdout
         resault=""
         while True:
@@ -283,8 +284,13 @@ class ADB():
             if stdText == "":
                 break
             resault+=stdText
-        process.stdout.close()
-        process.stdin.close()
+        try:
+            process.wait()
+            process.kill()
+            stdout.close()
+            process.stdin.close()
+        except:
+            return None
         return resault
 
     def __check_device_not_connect(self):
