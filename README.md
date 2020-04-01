@@ -9,6 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
+版本：v2.0
+日期：2020/4/1
+1、修正了多属性定位某些条件不起作用的错误
+
 版本：v1.9
 日期：2020/3/25
 1、修改底层adb方法，解决传送大文件卡死问题

@@ -17,8 +17,8 @@ class ADB():
     @staticmethod
     def getNowConnectDevice():
         adb_path = "%s" % ADB_PATH
-        resault = ADB.__execu_cmd('%s devices' % adb_path).strip()
-        f = StringIO(resault)
+        result = ADB.__execu_cmd('%s devices' % adb_path).strip()
+        f = StringIO(result)
         deviceList = []
         while True:
             s = f.readline()
@@ -216,15 +216,15 @@ class ADB():
         :return:
         '''
         cmd = self.__building_cmd(*cmd)
-        resault = self.__execu_cmd(cmd)
-        resault = resault.strip()
+        result = self.__execu_cmd(cmd)
+        result = result.strip()
         self.__check_device_not_connect()
         if success != None:
-            if success in resault:
+            if success in result:
                 return True
             else:
                 return False
-        return resault
+        return result
 
 
     def __exe_shell_cmd(self,*cmd,success=None):
@@ -235,15 +235,15 @@ class ADB():
         :return:
         '''
         cmd = self.__building_cmd("shell",*cmd)
-        resault = self.__execu_cmd(cmd)
-        resault = resault.strip()
+        result = self.__execu_cmd(cmd)
+        result = result.strip()
         self.__check_device_not_connect()
         if success!=None:
-            if success in resault:
+            if success in result:
                 return True
             else:
                 return False
-        return resault
+        return result
 
 
 
@@ -278,12 +278,12 @@ class ADB():
                                    errors='ignore')
 
         stdout=process.stdout
-        resault=""
+        result=""
         while True:
             stdText =stdout.readline()
             if stdText == "":
                 break
-            resault+=stdText
+            result+=stdText
         try:
             process.wait()
             process.kill()
@@ -291,7 +291,7 @@ class ADB():
             process.stdin.close()
         except:
             return None
-        return resault
+        return result
 
     def __check_device_not_connect(self):
         '''
