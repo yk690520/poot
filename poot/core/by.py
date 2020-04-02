@@ -17,6 +17,7 @@ part_text="part_text"
 index="index"   #
 name="name"   #
 value="value"
+bounds="bounds"
 
 find_map={"name":"name",
           "resource_id":"resource-id",
