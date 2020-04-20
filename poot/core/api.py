@@ -86,40 +86,33 @@ class Poot():
         if (not self._is_freeze) or (not self._node):
             # 如果ui不是冻结的
             self.__get_ui()
-            if kwargs:
-                # 返回对应的节点代理ui
-                proxy = self.__resolve_node(self._node)
-                proxy=proxy.offspring(**kwargs)
-                if not proxy:
-                    raise BaseException(NOT_FOUND_UI)
-                return proxy
-            else:
-                # 返回根节点代理ui
-                return self.__resolve_node(self._node)
-        else:
-            #如果是冻结的
-            if not self._node:
+        if kwargs:
+            # 返回对应的节点代理ui
+            proxy = self.__resolve_node(self._node)
+            proxy=proxy.offspring(**kwargs)
+            if not proxy:
                 raise BaseException(NOT_FOUND_UI)
-            if text or kwargs:
-                # 返回对应的节点代理ui
-                proxy = self.__resolve_node(self._node)
-                proxy = proxy.offspring(**kwargs)
-                if not proxy:
-                    raise BaseException(NOT_FOUND_UI)
-                return proxy
-            else:
-                # 返回根节点代理ui
-                return self.__resolve_node(self._node)
+            return proxy
+        else:
+            # 返回根节点代理ui
+            return self.__resolve_node(self._node)
+
     def freeze(self):
         self._is_freeze=True
+        self.__get_ui()
         return self
 
     def clear_freezed(self):
         self._is_freeze=False
         return self
 
+    def unfreeze(self):
+        self._is_freeze = False
+        return self
+
     def __enter__(self):
         self._is_freeze = True
+        self.__get_ui()
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._is_freeze=False
