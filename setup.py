@@ -1,7 +1,7 @@
 from setuptools import find_packages,setup
 setup(
     name = 'poot',     #pypi中的名称，pip或者easy_install安装时使用的名称
-    version = '2.3',
+    version = '2.4',
     author ='Junx',
     author_email='yk690520@outlook.com',
     packages = find_packages(),

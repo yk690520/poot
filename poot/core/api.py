@@ -27,13 +27,22 @@ class Poot():
         if deviceList == []:
             return []
         return deviceList
-    def __init__(self,device_id:str):
+    def __init__(self,device_id:str=None,screenshot_each_action=False):
         self._device_id=device_id #当前设备的连接id
+        if not device_id:
+            #主动获取device_id
+            devices = ADB.getNowConnectDevice()
+            if len(devices) > 0:
+                self._device_id=devices[0]
+            else:
+                raise BaseException("无设备连接！")
+            pass
         self._is_freeze=False  #是否处于冻结ui状态
         self._node=None  #ui信息
         self._adb=ADB(self._device_id) #adb 实例
         self._time_out=2#获取ui的超时时间
         self._sleep_spacing=1#单次获取ui睡眠间隔
+        self._screenshot_each_action=screenshot_each_action
 
     def __get_sleep_count(self,time_out:int=None):
         if time_out==None:
@@ -88,14 +97,14 @@ class Poot():
             self.__get_ui()
         if kwargs:
             # 返回对应的节点代理ui
-            proxy = self.__resolve_node(self._node)
+            proxy = self.__resolve_node(self._node,self._screenshot_each_action)
             proxy=proxy.offspring(**kwargs)
             if not proxy:
                 raise BaseException(NOT_FOUND_UI)
             return proxy
         else:
             # 返回根节点代理ui
-            return self.__resolve_node(self._node)
+            return self.__resolve_node(self._node,self._screenshot_each_action)
 
     def freeze(self):
         self._is_freeze=True
@@ -116,9 +125,9 @@ class Poot():
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._is_freeze=False
-    def __resolve_node(self,node)->UiProxy:
+    def __resolve_node(self,node,screenshot_each_action:bool)->UiProxy:
         #传入xml文件信息，并解析其节点信息存储至node
-        return UiProxy(node,self._adb)
+        return UiProxy(node,self._adb,screenshot_each_action)
     def set_find_ui_timeout(self,timeout):
         '''
         设置获取ui的超时时间

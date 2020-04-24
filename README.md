@@ -9,6 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
+版本：v2.4
+日期：2020/4/24
+1、增加了截图功能
+
 版本：v2.3
 日期：2020/4/20
 1、增加了在调用冻结方法时，再一次获取UI信息

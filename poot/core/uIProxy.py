@@ -162,10 +162,11 @@ class UiProxy():
     '''
     此类为ui控件的代理，通过解析xml文件生成。
     '''
-    def __init__(self,nodes:Union[dict,Node],adb:ADB):#当前ui代理所代理的节点
+    def __init__(self,nodes:Union[dict,Node],adb:ADB,screenshot_each_action:bool):#当前ui代理所代理的节点
         self._nodes=[]
         self._adb=adb
         self._focus=(0.5,0.5)#ui的焦点，用于点击或者滑动
+        self._screenshot_each_action=screenshot_each_action
         if type(nodes)==type([]):#传入的是dom节点数组
             for node in nodes:
                 self._nodes.append(node)
@@ -183,7 +184,7 @@ class UiProxy():
         #a b c d
         #0 1 2 3
         #-4 -3 -2 -1
-        return UiProxy(self._nodes[item],self._adb)
+        return UiProxy(self._nodes[item],self._adb,self._screenshot_each_action)
 
 
     def __len__(self):
@@ -196,7 +197,7 @@ class UiProxy():
         '''
         if len(self._nodes)>=1:
             parentNode:Node=self._nodes[0].father_node
-            return UiProxy(parentNode,self._adb)
+            return UiProxy(parentNode,self._adb,self._screenshot_each_action)
 
     def sibling(self,text=None,*,resource_id=None,package=None,clazz=None,desc=None,name=None,part_text=None,**kwargs):
         '''
@@ -242,7 +243,7 @@ class UiProxy():
                     all_node += self.__traverse_node(node)#遍历此子节点下的所有节点，包括此子节点
                 all_node=self.__del_same_node(all_node)#清除此节点列表里的重复节点引用
         if all_node:
-            return UiProxy(all_node,self._adb)
+            return UiProxy(all_node,self._adb,self._screenshot_each_action)
 
     def __process_param_to_find(self,kwargs):
         # 对kwargs进行处理，如果key是以M结尾,则将字符串转为re格式的正则对象
@@ -332,7 +333,7 @@ class UiProxy():
                 all_node+=node
             all_node=self.__del_same_node(all_node)
         if all_node:
-            return UiProxy(all_node,self._adb)
+            return UiProxy(all_node,self._adb,self._screenshot_each_action)
 
     def __del_same_node(self,all_node:[]):
         '''
@@ -454,6 +455,8 @@ class UiProxy():
         :param times:点击时长
         :return:
         '''
+        from airtest.core.api import snapshot
+        snapshot(msg="click")
         if len(self._nodes)>=1:
             x,y=self.get_focus_x_y(focus)
             self._adb.tap_x_y(x,y,times)
@@ -468,6 +471,8 @@ class UiProxy():
         :param endTime:
         :return:
         '''
+        from airtest.core.api import snapshot
+        snapshot(msg="set_text:%s" % text)
         self.tap()
         self._adb.set_text(text,self.get_text())
 
