@@ -9,6 +9,10 @@ python3 setup.py install
 python setup.py install
 
 【更新】
+版本：v2.5
+日期：2020/4/24
+1、截图失败错误直接捕获
+
 版本：v2.4
 日期：2020/4/24
 1、增加了截图功能

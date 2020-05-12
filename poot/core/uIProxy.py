@@ -456,7 +456,10 @@ class UiProxy():
         :return:
         '''
         from airtest.core.api import snapshot
-        snapshot(msg="click")
+        try:
+            snapshot(msg="click")
+        except:
+            pass
         if len(self._nodes)>=1:
             x,y=self.get_focus_x_y(focus)
             self._adb.tap_x_y(x,y,times)
@@ -472,7 +475,11 @@ class UiProxy():
         :return:
         '''
         from airtest.core.api import snapshot
-        snapshot(msg="set_text:%s" % text)
+        try:
+            snapshot(msg="set_text:%s" % text)
+        except:
+            pass
+
         self.tap()
         self._adb.set_text(text,self.get_text())
 
