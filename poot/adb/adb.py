@@ -59,10 +59,10 @@ class ADB():
         :param y1:
         :param x2:
         :param y2:
-        :param time: 滑动时间
+        :param time: 滑动时间  单位ms
         :return:
         '''
-        self.__exe_shell_cmd("input","swipe",x1, y1,x2,y2,time)
+        self.__exe_shell_cmd("input","swipe",x1,y1,x2,y2,time)
 
 
     def input(self,text):

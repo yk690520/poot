@@ -142,6 +142,7 @@ class Poot():
         :return:
         '''
         self._sleep_spacing=time_spacing
+
     @property
     def device_id(self):
         return self._device_id
@@ -157,6 +158,28 @@ class Poot():
         :return:
         '''
         self._adb.returnHome()
+
+    @inforPrint(infor="滚动")
+    def scroll(self, direction='vertical', percent=0.6, duration=2000,*,infor=None,beroeTime=0,endTime=0):
+        """
+        来自airtest的源代码
+        :param direction:滑动方向
+        :param percent:滑动百分比
+        :param duration:滑动时间
+        """
+        if direction not in ('vertical', 'horizontal'):
+            raise ValueError('Argument `direction` should be one of "vertical" or "horizontal". Got {}'
+                             .format(repr(direction)))
+        x1,x2,y1,y2=0.5,0.5,0.5,0.5
+        half_distance = percent / 2
+        if direction == 'vertical':
+            y1+=half_distance
+            y2-=half_distance
+        else:
+            x1+=half_distance
+            x2-=half_distance
+        return self.swipe(x1,y1,x2,y2,time=duration)
+
 
     @inforPrint(infor="等待UI出现")
     def wait_ui_appear(self,value,by:By=By.text,wait_time:int=30,*,infor=None,beroeTime=0,endTime=0):
@@ -185,7 +208,7 @@ class Poot():
         x1=width*x1
         y1=hight*y1
         x2=width*x2
-        y2=width*y2
+        y2=hight*y2
         self._adb.swipe(x1,y1,x2,y2,time)
 
     @inforPrint(infor="点击")
