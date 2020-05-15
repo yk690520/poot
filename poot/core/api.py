@@ -62,6 +62,13 @@ class Poot():
                 continue
             xml = "%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH, self._device_id)
             if os.path.exists(xml):
+                self.__ui=""
+                with open(xml,encoding='utf-8',errors='ignore') as file:
+                    while True:
+                        text=file.read(100)
+                        if not text:
+                            break
+                        self.__ui+=text
                 DomTree = parse(xml)
                 root_Node = DomTree.documentElement
                 node = Node(root_Node)
@@ -151,6 +158,15 @@ class Poot():
     def adb(self):
         return self._adb
 
+    def get_ui(self):
+        '''
+        返回xml文件内容
+        :return:
+        '''
+        self.__get_ui()
+        return self.__ui
+
+
     @inforPrint(infor="返回桌面")
     def return_home(self,*,infor=None,beforeTime=0,endTime=0):
         '''
@@ -205,10 +221,8 @@ class Poot():
         :return:
         '''
         width, hight = self._adb.get_screen_size()#获得屏幕宽高
-        x1=width*x1
-        y1=hight*y1
-        x2=width*x2
-        y2=hight*y2
+        x1,y1=width*x1,hight*y1
+        x2,y2=width*x2,hight*y2
         self._adb.swipe(x1,y1,x2,y2,time)
 
     @inforPrint(infor="点击")
