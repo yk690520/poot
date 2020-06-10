@@ -62,13 +62,6 @@ class Poot():
                 continue
             xml = "%s/%s.xml" % (TEMP_UI_XML_SAVE_PATH, self._device_id)
             if os.path.exists(xml):
-                self.__ui=""
-                with open(xml,encoding='utf-8',errors='ignore') as file:
-                    while True:
-                        text=file.read(100)
-                        if not text:
-                            break
-                        self.__ui+=text
                 DomTree = parse(xml)
                 root_Node = DomTree.documentElement
                 node = Node(root_Node)
@@ -163,8 +156,7 @@ class Poot():
         返回xml文件内容
         :return:
         '''
-        self.__get_ui()
-        return self.__ui
+        return self().get_tree()
 
 
     @inforPrint(infor="返回桌面")
