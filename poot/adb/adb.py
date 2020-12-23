@@ -6,6 +6,8 @@ from airtest.core.android.ime import YosemiteIme
 from io import StringIO
 from airtest.core.android.adb import ADB as AirtestADB
 #异常
+from poot import tools
+
 DEVICE_NOT_FOUND="设备已断开连接"
 #其它配置
 TEMP_UI_XML_SAVE_PATH="%s/uiTemp" % os.getcwd()#ui获取文件
@@ -272,6 +274,13 @@ class ADB():
         执行cmd
         :return:
         '''
+        system=tools.get_system()
+        if system=="Darwin":
+            shell=True
+        elif system=="Windows":
+            shell=False
+        else:
+            raise BaseException("是不受支持的平台！")
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
