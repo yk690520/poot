@@ -7,5 +7,3 @@ def get_logger():
 
 def get_system():
     return platform.system()
-
-print(get_system())
