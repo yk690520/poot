@@ -275,7 +275,8 @@ class ADB():
         process = subprocess.Popen(cmd, stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT,
-                                   errors='ignore')
+                                   errors='ignore',
+                                   shell=True)
 
         stdout=process.stdout
         result=""
